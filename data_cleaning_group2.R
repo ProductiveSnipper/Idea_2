@@ -9,7 +9,7 @@ library(labelled)
 library(table1)
 
 
-#load file
+###load file - comment out the desired dataset before starting ----
 
 setwd("C:/Users/amo2349/OneDrive - University of North Carolina at Chapel Hill/CAnD3/IDEA_2_Data/Idea_2")
 
@@ -19,7 +19,7 @@ data <- read.csv("synth.csv", header = T)
 #10% dataset
 # data <- read.csv("synth_random10.csv", header = T)
 
-#### Action Plan -----
+#### ****Action Plan**** -----
 #1) Create an ID for each record
 #2) Recode and label the following predictors
 #       Cancer mortality (0 = No death by cancer; 1 = Death by cancer)
@@ -37,7 +37,7 @@ data <- data|>
 
 ## Recode and Label Predictors ----
 
-## Cancer Mortality
+## *Cancer Mortality ----
 
 #create a new variable with cancer (binary)
 data <- data |>
@@ -56,7 +56,6 @@ table(data$cancer)
 
 #label the variables
 
-# cancer <- labelled(data$cancer, c("Death by Other" = 0,"Death by Cancer" = 1, "Alive" = 2))
 
 data <-data |> 
   mutate(cancer_lab = case_when(
@@ -67,7 +66,7 @@ data <-data |>
 
 table(data$cancer_lab)
 
-## Income
+## *Income ----
 
 #create a new variable with income
 
@@ -81,7 +80,7 @@ data <- data |>
 
 table(data$income)
 
-## Gender
+## *Gender ----
 
 table(data$SEX_synth)
 
@@ -93,7 +92,7 @@ data <- data |>
 
 table(data$sex)
 
-## Minority 
+## *Minority Status ----
 
 
 data <- data |> 
@@ -111,10 +110,16 @@ data_clean <- data |>
 
 
 #### DROP NAs ----
+## Comment out the CSV based on the file type
 
-detail(data_clean)
 
 mortality <- na.omit(data_clean)
+
+#10 percent
+# write.csv(mortality, file = "mortality_small.csv", row.names = T)
+
+#Full Sample
+write.csv(mortality, file = "mortality_full.csv", row.names = T)
 
 
 ##### VERIFY THE DATA -----
@@ -126,21 +131,11 @@ table1(~ minority_status + sex + income | cancer_lab, data=mortality)
 ?table1
 
 
-ggplot(data_clean, aes(income, ID))+
-  geom_bar(stat="identity", fill = "seagreen")
-
-## ggplot race and alive
-
-
-# Generic ggplot for two categorical variables (X and Fill)
-ggplot(data, aes(x = minority_status, fill = cancer_lab)) +
-  
-  # "dodge" puts bars side-by-side for raw counts
-  geom_bar(position = "dodge") + 
-  
-  # Labels and visual cleanup
-  labs(
-    title = "Raw Counts: Death Type by VMS ",
+# ggplot for two categorical variables (X and Fill)
+ggplot(mortality, aes(x = minority_status, fill = cancer_lab)) +
+    geom_bar(position = "dodge") + 
+    labs(
+    title = "Death Type by VMS ",
     x = "Visible Minority Status",
     y = "Total Count",
     fill = "Type of Death Legend"
