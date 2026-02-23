@@ -3,14 +3,21 @@
 #load relevant packages
 
 install.packages("labelled")
-
+install.packages("table1")
 library(tidyverse)
 library(labelled)
+library(table1)
 
 
 #load file
 
-data <- read.csv("synth_random10.csv", header = T)
+setwd("C:/Users/amo2349/OneDrive - University of North Carolina at Chapel Hill/CAnD3/IDEA_2_Data/Idea_2")
+
+#full dataset
+data <- read.csv("synth.csv", header = T)
+
+#10% dataset
+# data <- read.csv("synth_random10.csv", header = T)
 
 #### Action Plan -----
 #1) Create an ID for each record
@@ -33,32 +40,29 @@ data <- data|>
 ## Cancer Mortality
 
 #create a new variable with cancer (binary)
-data <- data |> 
+data <- data |>
   mutate(cancer = case_when(
     COD2_synth <= 2 ~ 0,
     COD2_synth == 3 ~ 1,
     COD2_synth == 4 ~ 1,
-    COD2_synth >= 5 & COD2_synth <= 13 ~ 0, 
+    COD2_synth >= 5 & COD2_synth <= 13 ~ 0,
     COD2_synth == 14 ~ 2
       ))
 
-data <- data |> select(-cancer)
+# data <- data |> select(-cancer)
 
 table(data$cancer)
-# print
-# 0         1 
-# 432604   2061 
 
 
 #label the variables
 
-cancer <- labelled(data$cancer, c("Death by Other" = 0,"Death by Cancer" = 1, "Alive" = 2))
+# cancer <- labelled(data$cancer, c("Death by Other" = 0,"Death by Cancer" = 1, "Alive" = 2))
 
 data <-data |> 
   mutate(cancer_lab = case_when(
     cancer == 0 ~ "Death by Other",
     cancer == 1 ~ "Death by Cancer",
-    cancer == 2 ~ "Alive"
+    cancer == 2 ~ NA
   ))
 
 table(data$cancer_lab)
@@ -105,7 +109,40 @@ table(data$minority_status)
 data_clean <- data |> 
   select(ID, cancer_lab, income, sex, minority_status)
 
+
+#### DROP NAs ----
+
+detail(data_clean)
+
+mortality <- na.omit(data_clean)
+
+
 ##### VERIFY THE DATA -----
 
-ggplot(data_clean, aes(income, cancer_lab))+
+table(mortality$minority_status, mortality$cancer_lab)
+
+table1(~ minority_status + sex + income | cancer_lab, data=mortality)
+
+?table1
+
+
+ggplot(data_clean, aes(income, ID))+
   geom_bar(stat="identity", fill = "seagreen")
+
+## ggplot race and alive
+
+
+# Generic ggplot for two categorical variables (X and Fill)
+ggplot(data, aes(x = minority_status, fill = cancer_lab)) +
+  
+  # "dodge" puts bars side-by-side for raw counts
+  geom_bar(position = "dodge") + 
+  
+  # Labels and visual cleanup
+  labs(
+    title = "Raw Counts: Death Type by VMS ",
+    x = "Visible Minority Status",
+    y = "Total Count",
+    fill = "Type of Death Legend"
+  ) +
+    theme_minimal()
